@@ -3,6 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from fyle_rest_auth.models import AuthToken
+from ..fyle.utils import FyleConnector
 
 
 class UserProfileView(generics.RetrieveAPIView):

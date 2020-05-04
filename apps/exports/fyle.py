@@ -4,8 +4,8 @@ from pprint import pprint
 
 class FyleTpaData:
     def __init__(self, refresh_token):
-        client_id = os.environ['CLIENT_ID']
-        client_secret = os.environ['CLIENT_SECRET']
+        client_id = os.environ['FYLE_CLIENT_ID']
+        client_secret = os.environ['FYLE_CLIENT_SECRET']
         self.conn = FyleSDK(
             base_url='https://staging.fyle.in',
             client_id=client_id,
@@ -92,6 +92,8 @@ class FormatData:
             value = "Payment Pending"
         elif value == "APPROVED":
             value = "Approved"
+        elif value == "APPROVER_PENDING":
+            value = "Approver pending"
         return value
 
     def reimbursable(self, value):
@@ -110,4 +112,4 @@ class FormatData:
         return value
 
     def format(self, tpas):
-        return [ [ self.formatting_specific_key(key, tpa[key]) for key in self.keys] for tpa in tpas]
+        return [[self.formatting_specific_key(key, tpa[key]) for key in self.keys] for tpa in tpas]

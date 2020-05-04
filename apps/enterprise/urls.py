@@ -13,11 +13,15 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.urls import path
+from django.urls import path, include
 
-from .views import UserProfileView
-from ..enterprise.views import UserAccountMapping
+from .views import EnterpriseView, UserAccountMapping
 
 urlpatterns = [
-    path('', UserProfileView.as_view())
+    path('orgs/<int:enterprise_id>', EnterpriseView.as_view({'get': 'get_orgs'})),
+    path('exports/<int:enterprise_id>', EnterpriseView.as_view({'get': 'get_export'})),
+    path('exports/', EnterpriseView.as_view({'post': 'post_export'})),
+    path('user/map_user/', UserAccountMapping.as_view()),
+    path('enterprise/', EnterpriseView.as_view({'post': 'post_enterprise'})),
+    path('orgs/', EnterpriseView.as_view({'post': 'post_org'}))
 ]
