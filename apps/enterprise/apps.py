@@ -1,5 +1,5 @@
 from django.apps import AppConfig
 
 
-class WorkspaceConfig(AppConfig):
+class EnterpriseConfig(AppConfig):
     name = 'enterprise'
