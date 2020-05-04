@@ -1,6 +1,5 @@
 from fylesdk import FyleSDK
 import os
-from pprint import pprint
 
 class FyleTpaData:
     def __init__(self, refresh_token):
