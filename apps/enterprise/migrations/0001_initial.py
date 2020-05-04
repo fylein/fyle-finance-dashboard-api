@@ -17,11 +17,11 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Enterprise',
             fields=[
+                ('id', models.AutoField(primary_key=True)),
+                ('name', models.TextField(blank=True, null=True, verbose_name='Enterprise name')),
+                ('users', models.ManyToManyField(help_text='User id mapping to enterprise table', to='users.User')),
                 ('created_at', models.DateTimeField(blank=True, null=True, verbose_name='created at time')),
                 ('updated_at', models.DateTimeField(blank=True, null=True, verbose_name='updated at time')),
-                ('id', models.AutoField(primary_key=True, serialize=False)),
-                ('name', models.TextField(blank=True, null=True, verbose_name='Enterprise name')),
-                ('users', models.ManyToManyField(help_text='User id mapping to enterprise table', to='users.User'))
             ],
             options={
                 'abstract': False,
@@ -30,14 +30,14 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Orgs',
             fields=[
-                ('created_at', models.DateTimeField(blank=True, null=True, verbose_name='created at time')),
-                ('updated_at', models.DateTimeField(blank=True, null=True, verbose_name='updated at time')),
-                ('id', models.AutoField(primary_key=True, serialize=False)),
+                ('id', models.AutoField(primary_key=True)),
                 ('enterprise', models.ForeignKey(help_text='Enterprise id', on_delete=models.deletion.PROTECT,
                                                  to='enterprise.Enterprise')),
                 ('refresh_token', models.TextField(blank=True, null=True, verbose_name='Refresh token')),
                 ('org_id', models.CharField(max_length=255, unique=True, verbose_name='org id')),
                 ('org_name', models.TextField(blank=True, null=True, verbose_name='Org name')),
+                ('created_at', models.DateTimeField(blank=True, null=True, verbose_name='created at time')),
+                ('updated_at', models.DateTimeField(blank=True, null=True, verbose_name='updated at time')),
             ],
             options={
                 'abstract': False,
@@ -46,14 +46,14 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Exports',
             fields=[
-                ('created_at', models.DateTimeField(blank=True, null=True, verbose_name='created at time')),
-                ('updated_at', models.DateTimeField(blank=True, null=True, verbose_name='updated at time')),
-                ('id', models.AutoField(primary_key=True, serialize=False)),
+                ('id', models.AutoField(primary_key=True)),
                 ('enterprise', models.ForeignKey(help_text='Enterprise id', on_delete=models.deletion.PROTECT,
                                                  to='enterprise.Enterprise')),
                 ('status', models.TextField(blank=True, null=True, verbose_name='Status')),
                 ('total_rows', models.IntegerField(max_length=255, verbose_name='No. of rows', default=0)),
                 ('gsheet_link', models.TextField(blank=True, null=True, verbose_name='Org name')),
+                ('created_at', models.DateTimeField(blank=True, null=True, verbose_name='created at time')),
+                ('updated_at', models.DateTimeField(blank=True, null=True, verbose_name='updated at time')),
             ],
             options={
                 'abstract': False,
