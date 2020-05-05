@@ -15,7 +15,7 @@ class EnterprisePermissions(permissions.BasePermission):
         enterprise_id = view.kwargs.get('enterprise_id')
         user_id = request.user
         user = User.objects.get(user_id=user_id)
-        enterprise = Enterprise.objects.filter(user__in=[user], pk=enterprise_id).all()
+        enterprise = Enterprise.objects.filter(users__in=[user], pk=enterprise_id).all()
         if not enterprise:
             return False
         return True

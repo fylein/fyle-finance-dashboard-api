@@ -15,13 +15,13 @@ Including another URLconf
 """
 from django.urls import path, include
 
-from .views import EnterpriseView, UserAccountMapping
+from .views import EnterpriseView, UserAccountMapping, ExportView, OrgView
 
 urlpatterns = [
-    path('orgs/<int:enterprise_id>', EnterpriseView.as_view({'get': 'get_orgs'})),
-    path('exports/<int:enterprise_id>', EnterpriseView.as_view({'get': 'get_export'})),
-    path('exports/', EnterpriseView.as_view({'post': 'post_export'})),
+    path('orgs/<int:enterprise_id>', OrgView.as_view({'get': 'get_orgs'})),
+    path('exports/<int:enterprise_id>', ExportView.as_view({'get': 'get_export'})),
+    path('exports/', ExportView.as_view({'post': 'post_export'})),
     path('user/map_user/', UserAccountMapping.as_view()),
     path('enterprise/', EnterpriseView.as_view({'post': 'post_enterprise'})),
-    path('orgs/', EnterpriseView.as_view({'post': 'post_org'}))
+    path('orgs/', OrgView.as_view({'post': 'post_org'}))
 ]

@@ -11,7 +11,6 @@ class FyleConnector:
         client_id = settings.FYLE_CLIENT_ID
         client_secret = settings.FYLE_CLIENT_SECRET
         base_url = settings.FYLE_BASE_URL
-
         self.connection = FyleSDK(
             base_url=base_url,
             client_id=client_id,
@@ -26,3 +25,6 @@ class FyleConnector:
         employee_profile = self.connection.Employees.get_my_profile()
 
         return employee_profile['data']
+
+    def get_fyle_tpa(self):
+        return self.connection.Expenses.get_all()

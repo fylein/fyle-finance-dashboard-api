@@ -11,7 +11,7 @@ scope = [
 
 class GoogleSpreadSheet:
     def __init__(self):
-        creds = ServiceAccountCredentials.from_json_keyfile_name('fyle-finance-dashboard-api/client_secret.json', scope)
+        creds = ServiceAccountCredentials.from_json_keyfile_name('fyle_finance_dashboard_api/client_secret.json', scope)
         self.client = gspread.authorize(creds)
         self.service = discovery.build('sheets', 'v4', credentials=creds)
         self.range_ = 'A1:Z'

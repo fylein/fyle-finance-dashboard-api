@@ -8,7 +8,7 @@ from .models import Enterprise, Orgs, Exports
 
 class EnterpriseSerializer(serializers.ModelSerializer):
     """
-    Workspace Schedule Serializer
+    Enterprise Serializer
     """
     class Meta:
         model = Enterprise
@@ -17,7 +17,7 @@ class EnterpriseSerializer(serializers.ModelSerializer):
 
 class OrgsSerializer(serializers.ModelSerializer):
     """
-    Workspace settings serializer
+   Organizations serializer
     """
 
     class Meta:
@@ -27,7 +27,7 @@ class OrgsSerializer(serializers.ModelSerializer):
 
 class ExportSerializer(serializers.ModelSerializer):
     """
-    Workspace settings serializer
+    Exports serializer
     """
 
     class Meta:
