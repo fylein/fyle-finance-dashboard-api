@@ -16,7 +16,6 @@ Including another URLconf
 from django.urls import path
 
 from .views import UserProfileView
-from ..enterprise.views import UserAccountMapping
 
 urlpatterns = [
     path('', UserProfileView.as_view())

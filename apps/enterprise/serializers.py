@@ -1,5 +1,5 @@
 """
-Enterprise Serializers
+Workspace Serializers
 """
 from rest_framework import serializers
 
