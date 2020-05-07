@@ -18,7 +18,6 @@ class GoogleSpreadSheet:
         self.range_ = 'A1:Z'
 
     def create_sheet(self, share_with):
-        share_with = 'sheshant.sinha@fyle.in'
         sheet = self.client.create('Fyle-GDS')
         sheet.share(share_with, perm_type='user', role='writer')
         return sheet.id
