@@ -168,16 +168,4 @@ FYLE_CLIENT_ID = os.environ.get('FYLE_CLIENT_ID')
 FYLE_CLIENT_SECRET = os.environ.get('FYLE_CLIENT_SECRET')
 FYLE_BASE_URL = os.environ.get('FYLE_BASE_URL')
 FYLE_JOBS_URL = os.environ.get('FYLE_JOBS_URL')
-GSHEET_CREDS = {
-  "type": "service_account",
-  "project_id": "multi-org-export",
-  "private_key_id": os.environ.get('GSHEET_PRIVATE_KEY_ID'),
-  "private_key": os.environ.get('GSHEET_PRIVATE_KEY'),
-  "client_email": os.environ.get('GSHEET_CLIENT_EMAIL'),
-  "client_id": os.environ.get('GSHEET_CLIENT_ID'),
-  "auth_uri": os.environ.get('GSHEET_AUTH_URL'),
-  "token_uri": os.environ.get('GSHEET_TOKEN_URL'),
-  "auth_provider_x509_cert_url": os.environ.get('GSHEET_AUTH_PROVIDER_x509_CERT_URL'),
-  "client_x509_cert_url": os.environ.get('GSHEET_CLIENT_x509_CERT_URL')
-}
 CORS_ORIGIN_ALLOW_ALL = True
