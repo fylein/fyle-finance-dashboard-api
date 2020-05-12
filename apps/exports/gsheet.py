@@ -29,12 +29,10 @@ class GoogleSpreadSheet:
         sheet.share(email_id, perm_type='user', role='writer')
 
     def write_data(self, orgs, sheet_id):
-        data_to_export, total_orgs = [get_headers()], 0
+        data_to_export, total_orgs = [get_headers()], len(orgs)
         for org in orgs.values():
-            if org['refresh_token'] is not None:
-                fyle_tpa_data = FyleConnector(org['refresh_token'])
-                data_to_export += format_expenses(fyle_tpa_data.get_fyle_tpa())
-                total_orgs += 1
+            fyle_tpa_data = FyleConnector(org['refresh_token'])
+            data_to_export += format_expenses(fyle_tpa_data.get_fyle_tpa())
 
         value_range_body = {
             'values': data_to_export
