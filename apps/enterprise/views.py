@@ -54,7 +54,7 @@ class OrgView(generics.ListCreateAPIView):
                     },
                     status= status.HTTP_400_BAD_REQUEST
                 )
-        orgs = Orgs(org_name=request.data['org_name'], org_id=request.data['org_id'], enterprise_id=request.data['enterprise_id'], refresh_token=request.data['refresh_token'])
+        orgs = Orgs(org_name=request.data['org_name'], org_id=request.data['org_id'], enterprise_id=request.data['enterprise_id'])
         orgs.save()
         if orgs:
             return Response(
