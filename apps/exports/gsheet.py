@@ -50,4 +50,4 @@ class GoogleSpreadSheet:
         rows = len(data_to_export)-1
         if response:
             return True, rows, total_orgs
-        return False, 0, total_orgs, SYNC_FAILED
+        return False, 0, total_orgs
