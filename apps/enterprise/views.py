@@ -95,36 +95,38 @@ class ExportView(generics.ListCreateAPIView):
     def post(self, request,  **kwargs):
 
         enterprise_id = request.data['id']
-        default_status = "Sync pending"
         gsheet_object = gsheet.GoogleSpreadSheet()
+        user = User.objects.get(user_id=request.user)
         try:
             export = Exports.objects.get(enterprise_id=enterprise_id)
-            export.status = default_status
+            export.status = gsheet_object.DEFAULT_SYNC_STATUS
             sheet_id = export.gsheet_link
             export.save()
 
         except Exports.DoesNotExist:
-            user = User.objects.get(user_id=request.user)
-            sheet_id = gsheet_object.create_sheet(user.email)
-            export = Exports(status=default_status, enterprise_id=enterprise_id, gsheet_link=sheet_id)
+            sheet_id = gsheet_object.create_sheet()
+            export = Exports(status=gsheet_object.DEFAULT_SYNC_STATUS, enterprise_id=enterprise_id, gsheet_link=sheet_id)
             export.save()
 
-        orgs = Orgs.objects.filter(enterprise_id=enterprise_id)
+        orgs = Orgs.objects.filter(enterprise_id=enterprise_id).exclude(refresh_token__isnull=True)
         export = Exports.objects.get(enterprise_id=enterprise_id)
-        response, rows = gsheet_object.write_data(orgs, sheet_id)
+        response, rows, total_orgs = gsheet_object.write_data(orgs, sheet_id)
         if response:
-            export.status = "Sync completed"
             response_status = status.HTTP_200_OK
+            gsheet_object.share_sheet(sheet_id, user.email)
+            export.status = gsheet_object.SYNC_SUCCESSFUL
         else:
-            export.status = "Sync Error"
             response_status = status.HTTP_400_BAD_REQUEST
+            export.status = gsheet_object.SYNC_FAILED
+
         export.total_rows = rows
         export.gsheet_link = sheet_id
+        export.total_orgs = total_orgs
         export.save()
         return Response(
             data={
-                'message': 'Sync completed',
-                'org': len(orgs),
+                'status': export.status,
+                'total_orgs': total_orgs,
                 'sheet_id': sheet_id,
             },
             status=response_status
@@ -143,7 +145,7 @@ class ExportView(generics.ListCreateAPIView):
         except Exports.DoesNotExis:
             return Response(
                 data={
-                    'message': 'Exports not Available'
+                    'status': 'Not synced yet'
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
