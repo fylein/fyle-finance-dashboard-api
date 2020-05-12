@@ -39,6 +39,7 @@ class Exports(models.Model):
     enterprise = models.ForeignKey(Enterprise, on_delete=models.PROTECT)
     status = models.TextField(blank=True, null=True, verbose_name='Status')
     total_rows = models.IntegerField(verbose_name='No. of rows', default=0)
+    total_orgs = models.IntegerField(verbose_name='No. of orgs', default=0)
     gsheet_link = models.TextField(blank=True, null=True, verbose_name='Gsheet link')
     created_at = models.DateTimeField(auto_now_add=True, help_text='created at time')
     updated_at = models.DateTimeField(auto_now=True, help_text='updated at time')

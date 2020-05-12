@@ -51,6 +51,7 @@ class Migration(migrations.Migration):
                                                  to='enterprise.Enterprise')),
                 ('status', models.TextField(blank=True, null=True, verbose_name='Status')),
                 ('total_rows', models.IntegerField(max_length=255, verbose_name='No. of rows', default=0)),
+                ('total_orgs', models.IntegerField(max_length=255, verbose_name='No. of orgs', default=0)),
                 ('gsheet_link', models.TextField(blank=True, null=True, verbose_name='Org name')),
                 ('created_at', models.DateTimeField(blank=True, null=True, verbose_name='created at time')),
                 ('updated_at', models.DateTimeField(blank=True, null=True, verbose_name='updated at time')),
