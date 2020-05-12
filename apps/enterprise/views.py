@@ -124,11 +124,6 @@ class ExportView(generics.ListCreateAPIView):
         export.total_orgs = total_orgs
         export.save()
         return Response(
-            data={
-                'status': export.status,
-                'total_orgs': total_orgs,
-                'sheet_id': sheet_id,
-            },
             status=response_status
         )
 
@@ -142,7 +137,7 @@ class ExportView(generics.ListCreateAPIView):
                 data=ExportSerializer(export).data,
                 status=status.HTTP_200_OK
             )
-        except Exports.DoesNotExis:
+        except Exports.DoesNotExist:
             return Response(
                 data={
                     'status': 'Not synced yet'
