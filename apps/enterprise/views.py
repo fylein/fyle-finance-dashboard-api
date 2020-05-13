@@ -4,13 +4,14 @@ from rest_framework.response import Response
 from rest_framework.views import status
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
+from .permissions import EnterprisePermissions
 from fyle_rest_auth.utils import AuthUtils
 from fylesdk import exceptions as fyle_exc
 
-from .models import Enterprise, Orgs, Exports
-from ..users.models import User
+from .models import Enterprise, Org, Export
+from apps.users.models import User
 from .serializers import ExportSerializer, EnterpriseSerializer, OrgsSerializer
-from ..exports import gsheet
+from .utils import write_gsheet
 
 User = get_user_model()
 auth_utils = AuthUtils()
@@ -20,6 +21,7 @@ class EnterpriseView(generics.ListCreateAPIView):
     """
     Fyle Finance Export
     """
+    permission_classes = []
 
     def post(self, request, **kwargs):
 
@@ -43,6 +45,8 @@ class EnterpriseView(generics.ListCreateAPIView):
 
 class OrgView(generics.ListCreateAPIView):
 
+    serializer_class = OrgsSerializer
+
     def post(self, request, **kwargs):
 
         fields = ['org_name', 'org_id', 'enterprise_id']
@@ -54,9 +58,9 @@ class OrgView(generics.ListCreateAPIView):
                     },
                     status= status.HTTP_400_BAD_REQUEST
                 )
-        orgs = Orgs(org_name=request.data['org_name'], org_id=request.data['org_id'], enterprise_id=request.data['enterprise_id'])
-        orgs.save()
-        if orgs:
+        org = Org(org_name=request.data['org_name'], org_id=request.data['org_id'], enterprise_id=request.data['enterprise_id'])
+        org.save()
+        if org:
             return Response(
                 data={
                     'name': request.data['org_name'],
@@ -71,73 +75,28 @@ class OrgView(generics.ListCreateAPIView):
             status= status.HTTP_400_BAD_REQUEST
         )
 
-    def get(self, request, **kwargs):
-        """
-        Get Orgs by enterprise id
-        """
-        orgs = Orgs.objects.filter(enterprise_id=kwargs['enterprise_id'])
-        if orgs:
-            return Response(
-                data=OrgsSerializer(orgs, many=True).data if orgs else [],
-                status=status.HTTP_200_OK
-            )
-        else:
-            return Response(
-                data={
-                    'message': 'Enterprise with this id does not exist'
-                },
-                status=status.HTTP_400_BAD_REQUEST
-            )
+    def get_queryset(self):
+        return Org.objects.filter(enterprise_id=self.kwargs['enterprise_id'])
 
 
 class ExportView(generics.ListCreateAPIView):
 
     def post(self, request,  **kwargs):
 
-        enterprise_id = request.data['id']
-        gsheet_object = gsheet.GoogleSpreadSheet()
-        user = User.objects.get(user_id=request.user)
-        try:
-            export = Exports.objects.get(enterprise_id=enterprise_id)
-            export.status = gsheet_object.DEFAULT_SYNC_STATUS
-            sheet_id = export.gsheet_link
-            export.save()
-
-        except Exports.DoesNotExist:
-            sheet_id = gsheet_object.create_sheet()
-            export = Exports(status=gsheet_object.DEFAULT_SYNC_STATUS, enterprise_id=enterprise_id, gsheet_link=sheet_id)
-            export.save()
-
-        orgs = Orgs.objects.filter(enterprise_id=enterprise_id).exclude(refresh_token__isnull=True)
-        export = Exports.objects.get(enterprise_id=enterprise_id)
-        response, rows, total_orgs = gsheet_object.write_data(orgs, sheet_id)
-        if response:
-            response_status = status.HTTP_200_OK
-            gsheet_object.share_sheet(sheet_id, user.email)
-            export.status = gsheet_object.SYNC_SUCCESSFUL
-        else:
-            response_status = status.HTTP_400_BAD_REQUEST
-            export.status = gsheet_object.SYNC_FAILED
-
-        export.total_rows = rows
-        export.gsheet_link = sheet_id
-        export.total_orgs = total_orgs
-        export.save()
-        return Response(
-            status=response_status
-        )
+        enterprise_id = kwargs['enterprise_id']
+        return write_gsheet(request.user, enterprise_id)
 
     def get(self, request, **kwargs):
         """
-        Get Exports by Id
+        Get Export by Id
         """
         try:
-            export = Exports.objects.get(enterprise_id=kwargs['enterprise_id'])
+            export = Export.objects.get(enterprise_id=kwargs['enterprise_id'])
             return Response(
                 data=ExportSerializer(export).data,
                 status=status.HTTP_200_OK
             )
-        except Exports.DoesNotExist:
+        except Export.DoesNotExist:
             return Response(
                 data={
                     'status': 'Not synced yet'
@@ -158,10 +117,10 @@ class UserAccountMapping(generics.RetrieveAPIView):
         try:
             enterprise = Enterprise.objects.get(users__in=[request.user])
             data = EnterpriseSerializer(enterprise).data
-        except Enterprise.DoesNotExis:
+        except Enterprise.DoesNotExist:
             try:
-                orgs = Orgs.objects.get(org_id=request.data['org_id'])
-                enterprise = Enterprise.objects.get(id=orgs.enterprise_id)
+                org = Org.objects.get(org_id=request.data['org_id'])
+                enterprise = Enterprise.objects.get(id=org.enterprise_id)
                 enterprise.users.add(User.objects.get(user_id=request.user))
                 enterprise = Enterprise.objects.get(users__in=[request.user])
                 data = EnterpriseSerializer(enterprise).data
@@ -188,8 +147,8 @@ class ConnectFyleView(viewsets.ViewSet):
             refresh_token = auth_utils.generate_fyle_refresh_token(authorization_code)['refresh_token']
             fyle_user = auth_utils.get_fyle_user(refresh_token)
             org_id = fyle_user['org_id']
-
-            org_credential, _ = Orgs.objects.update_or_create(
+            Org.objects.get(org_id=org_id, pk=kwargs['enterprise_id'])
+            org_credential, _ = Org.objects.update_or_create(
                 org_id=org_id,
                 defaults={
                     'refresh_token': refresh_token,
@@ -199,6 +158,13 @@ class ConnectFyleView(viewsets.ViewSet):
             return Response(
                 data=OrgsSerializer(org_credential).data,
                 status=status.HTTP_200_OK
+            )
+        except Org.DoesNotExist:
+            return Response(
+                {
+                    'message': "This org doesn't exist in this enterprise"
+                },
+                status=status.HTTP_404_NOT_FOUND
             )
         except fyle_exc.UnauthorizedClientError:
             return Response(
