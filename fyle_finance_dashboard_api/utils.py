@@ -21,7 +21,7 @@ def format_date(value):
     return value
 
 
-FUND_SOURCE = {
+FUND_SOURCES = {
     "PERSONAL": "Personal Account",
     "ADVANCE": "Advance",
     "CCC": "Corporate Credit Card"
@@ -37,18 +37,13 @@ STATES = {
     "PAID": "Paid"
 }
 
-REIMBURSABLE = {
-    1: "YES",
-    0: "NO"
-}
-
 
 def get_headers():
     header = [
-        'Org name',
+        'Entity Name',
         'Employee Email',
         'Report Id',
-        'Employee Code',
+        'Employee Id',
         'Cost Center',
         'Reimbursable',
         'State',
@@ -56,13 +51,13 @@ def get_headers():
         'Currency',
         'Amount',
         'Purpose',
-        'Sub Category',
         'Expense Number',
         'Fund Source',
         'Category Name',
-        'Approved on',
-        'Spent on',
-        'Created At'
+        'Sub Category',
+        'Approved On',
+        'Spent On',
+        'Created On'
     ]
     return header
 
@@ -76,16 +71,16 @@ def format_expenses(expenses):
             expense['report_id'],
             expense['employee_id'],
             expense['cost_center_name'],
-            REIMBURSABLE[expense['reimbursable']],
+            "YES" if expense['reimbursable'] else "NO",
             STATES[expense['state']],
             expense['claim_number'],
             expense['currency'],
             expense['amount'],
             expense['purpose'],
-            expense['sub_category'],
             expense['expense_number'],
-            FUND_SOURCE[expense['fund_source']],
+            FUND_SOURCES[expense['fund_source']],
             expense['category_name'],
+            expense['sub_category'],
             format_date(expense['approved_at']),
             format_date(expense['spent_at']),
             format_date(expense['created_at'])

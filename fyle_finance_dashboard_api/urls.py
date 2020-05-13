@@ -20,5 +20,5 @@ urlpatterns = [
     path('api/admin/', admin.site.urls),
     path('api/auth/', include('fyle_rest_auth.urls')),
     path('api/user/', include('apps.users.urls')),
-    path('api/enterprise/', include('apps.enterprise.urls')),
+    path('api/enterprises/', include('apps.enterprise.urls')),
 ]
