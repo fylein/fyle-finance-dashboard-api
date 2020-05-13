@@ -38,7 +38,7 @@ class GoogleSpreadSheet:
         data_to_export, total_orgs = [get_headers()], len(orgs)
         for org in orgs.values():
             fyle_tpa_data = FyleConnector(org['refresh_token'])
-            data_to_export += format_expenses(fyle_tpa_data.get_fyle_tpa())
+            data_to_export += format_expenses(fyle_tpa_data.get_expenses())
 
         value_range_body = {
             'values': data_to_export
