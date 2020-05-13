@@ -12,6 +12,7 @@ from .models import Enterprise, Org, Export
 from apps.users.models import User
 from .serializers import ExportSerializer, EnterpriseSerializer, OrgsSerializer
 from .utils import write_gsheet
+from fyle_finance_dashboard_api.utils import assert_valid
 
 User = get_user_model()
 auth_utils = AuthUtils()
@@ -50,29 +51,13 @@ class OrgView(generics.ListCreateAPIView):
     def post(self, request, **kwargs):
 
         fields = ['org_name', 'org_id', 'enterprise_id']
-        for field in fields:
-            if field not in request.data:
-                return Response(
-                    data= {
-                        'messages': "{} Field is missing".format(field),
-                    },
-                    status= status.HTTP_400_BAD_REQUEST
-                )
-        org = Org(org_name=request.data['org_name'], org_id=request.data['org_id'], enterprise_id=request.data['enterprise_id'])
+        assert_valid(field in fields, "{0} Field is missing".format(field))
+        org = Org(org_name=request.data['org_name'], org_id=request.data['org_id'],
+                  enterprise_id=request.data['enterprise_id'])
         org.save()
-        if org:
-            return Response(
-                data={
-                    'name': request.data['org_name'],
-                    'id': request.data['enterprise_id']
-                },
-                status=status.HTTP_200_OK
-            )
         return Response(
-            data = {
-                'messages': "Unable to add org"
-            },
-            status= status.HTTP_400_BAD_REQUEST
+            data=OrgsSerializer(org).data,
+            status=status.HTTP_200_OK
         )
 
     def get_queryset(self):
@@ -114,17 +99,16 @@ class UserAccountMapping(generics.RetrieveAPIView):
         Get User Details
         """
         response_status = status.HTTP_200_OK
-        try:
-            enterprise = Enterprise.objects.get(users__in=[request.user])
-            data = EnterpriseSerializer(enterprise).data
-        except Enterprise.DoesNotExist:
+        enterprise = Enterprise.objects.filter(users__in=[request.user]).first()
+        data = EnterpriseSerializer(enterprise).data
+        if not data:
             try:
                 org = Org.objects.get(org_id=request.data['org_id'])
                 enterprise = Enterprise.objects.get(id=org.enterprise_id)
                 enterprise.users.add(User.objects.get(user_id=request.user))
                 enterprise = Enterprise.objects.get(users__in=[request.user])
                 data = EnterpriseSerializer(enterprise).data
-            except Exception as e:
+            except Org.DoesNotExist as e:
                 response_status = status.HTTP_401_UNAUTHORIZED
                 data = {}
         return Response(
