@@ -26,5 +26,5 @@ class FyleConnector:
 
         return employee_profile['data']
 
-    def get_fyle_tpa(self):
+    def get_expenses(self):
         return self.connection.Expenses.get_all()
