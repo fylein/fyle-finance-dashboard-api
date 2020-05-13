@@ -28,7 +28,7 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
-            name='Orgs',
+            name='Org',
             fields=[
                 ('id', models.AutoField(primary_key=True)),
                 ('enterprise', models.ForeignKey(help_text='Enterprise id', on_delete=models.deletion.PROTECT,
@@ -44,7 +44,7 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
-            name='Exports',
+            name='Export',
             fields=[
                 ('id', models.AutoField(primary_key=True)),
                 ('enterprise', models.ForeignKey(help_text='Enterprise id', on_delete=models.deletion.PROTECT,
