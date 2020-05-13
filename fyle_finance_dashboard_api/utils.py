@@ -14,7 +14,7 @@ def assert_valid(condition: bool, message: str) -> Response or None:
         })
 
 
-def get_date(value):
+def format_date(value):
     if value:
         value = value.split("T")[0].split("-")[::-1]
         return "-".join(value)
@@ -42,61 +42,53 @@ REIMBURSABLE = {
     0: "NO"
 }
 
-EXPENSE_COLUMN_NAMES = {
-    "employee_email": "Employee Email",
-    "employee_id": "Employee Code",
-    "spent_at": "Spent on",
-    "currency": "Currency",
-    "amount": "Amount",
-    "purpose": "Purpose",
-    "cost_center_name": "Cost Center",
-    "category_name": "Category",
-    "sub_category": "Sub Category",
-    "expense_number": "Expense Number",
-    "report_id": "Report Id",
-    "state": "State",
-    "fund_source": "Fund Source",
-    "reimbursable": "Reimbursable",
-    "created_at": "Created on",
-    "approved_at": "Approved on",
-    "org_name": "Org name",
-    "claim_number": "Claim Number"
-}
-
-get_value_from_dict = {
-    "fund_source": FUND_SOURCE,
-    "reimbursable": REIMBURSABLE,
-    "state": STATES
-}
-
-get_value_from_function = {
-    "spent_at": get_date,
-    "created_at": get_date,
-    "approved_at": get_date
-}
-
 
 def get_headers():
-    return [head for head in EXPENSE_COLUMN_NAMES]
-
-
-def formatting_specific_key(key, value):
-    if key in value_casting:
-        value = value_casting[key](value)
-    return value
+    header = [
+        'Org name',
+        'Employee Email',
+        'Report Id',
+        'Employee Code',
+        'Cost Center',
+        'Reimbursable',
+        'State',
+        'Claim Number',
+        'Currency',
+        'Amount',
+        'Purpose',
+        'Sub Category',
+        'Expense Number',
+        'Fund Source',
+        'Category Name',
+        'Approved on',
+        'Spent on',
+        'Created At'
+    ]
+    return header
 
 
 def format_expenses(expenses):
-    data_to_export = []
+    formatted_expenses = []
     for expense in expenses:
-        single_expense = []
-        for column_name in EXPENSE_COLUMN_NAMES:
-            column_value = expense[column_name]
-            if column_name in get_value_from_dict:
-                column_value = get_value_from_dict[column_name].get(expense[column_name], expense[column_name])
-            if column_name in get_value_from_function:
-                column_value = get_date(expense[column_name])
-            single_expense.append(column_value)
-        data_to_export.append(single_expense)
-
-    return data_to_export
+        formatted_expense = [
+            expense['org_name'],
+            expense['employee_email'],
+            expense['report_id'],
+            expense['employee_id'],
+            expense['cost_center_name'],
+            REIMBURSABLE[expense['reimbursable']],
+            STATES[expense['state']],
+            expense['claim_number'],
+            expense['currency'],
+            expense['amount'],
+            expense['purpose'],
+            expense['sub_category'],
+            expense['expense_number'],
+            FUND_SOURCE[expense['fund_source']],
+            expense['category_name'],
+            format_date(expense['approved_at']),
+            format_date(expense['spent_at']),
+            format_date(expense['created_at'])
+        ]
+        formatted_expenses.append(formatted_expense)
+    return formatted_expenses

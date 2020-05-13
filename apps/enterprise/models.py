@@ -18,7 +18,7 @@ class Enterprise(models.Model):
     updated_at = models.DateTimeField(auto_now=True, help_text='updated at time')
 
 
-class Orgs(models.Model):
+class Org(models.Model):
     """
     Orgs
     """
@@ -31,7 +31,7 @@ class Orgs(models.Model):
     updated_at = models.DateTimeField(auto_now=True, help_text='updated at time')
 
 
-class Exports(models.Model):
+class Export(models.Model):
     """
     Exports
     """
