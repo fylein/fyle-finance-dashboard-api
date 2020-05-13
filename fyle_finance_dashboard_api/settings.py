@@ -49,7 +49,6 @@ INSTALLED_APPS = [
     'apps.users',
     'fyle_rest_auth',
     'apps.enterprise',
-    'apps.exports'
 ]
 
 MIDDLEWARE = [
