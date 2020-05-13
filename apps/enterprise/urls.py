@@ -20,7 +20,7 @@ from .views import EnterpriseView, UserAccountMapping, ExportView, OrgView, Conn
 urlpatterns = [
     path('<int:enterprise_id>/orgs/', OrgView.as_view()),
     path('<int:enterprise_id>/exports/', ExportView.as_view()),
-    path('map_user/', UserAccountMapping.as_view()),
-    path('enterprise/', EnterpriseView.as_view()),
-    path('<int:enterprise_id>/connect_fyle/authorization_code/', ConnectFyleView.as_view({'post': 'post'})),
+    path('add_user/', UserAccountMapping.as_view()),
+    path('', EnterpriseView.as_view()),
+    path('<int:enterprise_id>/connect_fyle/authorization_code/', ConnectFyleView.as_view({'post': 'post'}))
 ]
