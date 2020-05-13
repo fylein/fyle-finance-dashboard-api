@@ -1,6 +1,7 @@
 from rest_framework.views import Response
 from rest_framework.serializers import ValidationError
 
+
 def assert_valid(condition: bool, message: str) -> Response or None:
     """
     Assert conditions
