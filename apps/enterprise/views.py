@@ -131,11 +131,13 @@ class ConnectFyleView(viewsets.ViewSet):
             refresh_token = auth_utils.generate_fyle_refresh_token(authorization_code)['refresh_token']
             fyle_user = auth_utils.get_fyle_user(refresh_token)
             org_id = fyle_user['org_id']
-            Org.objects.get(org_id=org_id, pk=kwargs['enterprise_id'])
+            user_email = fyle_user['employee_email']
+            Org.objects.get(org_id=org_id, enterprise_id=kwargs['enterprise_id'])
             org_credential, _ = Org.objects.update_or_create(
                 org_id=org_id,
                 defaults={
                     'refresh_token': refresh_token,
+                    'added_by': user_email
                 }
             )
 

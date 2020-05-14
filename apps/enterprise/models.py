@@ -27,6 +27,7 @@ class Org(models.Model):
     refresh_token = models.TextField(blank=True, null=True, verbose_name='Refresh token')
     org_id = models.CharField(max_length=255, unique=True, verbose_name='org id')
     org_name = models.TextField(blank=True, null=True, verbose_name='Org name')
+    added_by = models.TextField(blank=True, null=True, verbose_name='Added by')
     created_at = models.DateTimeField(auto_now_add=True, help_text='created at time')
     updated_at = models.DateTimeField(auto_now=True, help_text='updated at time')
 

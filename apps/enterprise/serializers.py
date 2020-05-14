@@ -22,7 +22,7 @@ class OrgsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Org
-        fields = '__all__'
+        fields = ['org_name', 'org_id', 'added_by', 'updated_at', 'created_at', 'enterprise_id']
 
 
 class ExportSerializer(serializers.ModelSerializer):
