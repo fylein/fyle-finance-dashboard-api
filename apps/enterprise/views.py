@@ -101,16 +101,20 @@ class UserAccountMapping(generics.RetrieveAPIView):
         response_status = status.HTTP_200_OK
         enterprise = Enterprise.objects.filter(users__in=[request.user]).first()
         data = EnterpriseSerializer(enterprise).data
-        if not data:
+        if not enterprise:
             try:
                 org = Org.objects.get(org_id=request.data['org_id'])
                 enterprise = Enterprise.objects.get(id=org.enterprise_id)
                 enterprise.users.add(User.objects.get(user_id=request.user))
                 enterprise = Enterprise.objects.get(users__in=[request.user])
                 data = EnterpriseSerializer(enterprise).data
-            except Org.DoesNotExist as e:
-                response_status = status.HTTP_401_UNAUTHORIZED
-                data = {}
+            except Org.DoesNotExist:
+                return Response(
+                    {
+                        'message': "Org Doesn't Exist"
+                    },
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
         return Response(
             status=response_status,
             data=data
