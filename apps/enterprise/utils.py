@@ -24,7 +24,7 @@ class GoogleSpreadSheet:
         self.range_ = 'A1:Z'
         self.SYNC_SUCCESSFUL = "Sync Completed"
         self.SYNC_FAILED = "Sync Failed"
-        self.DEFAULT_SYNC_STATUS = "Sync Pending"
+        self.DEFAULT_SYNC_STATUS = "Sync is in progress"
 
     def create_sheet(self):
         sheet = self.client.create('Fyle-GDS')
@@ -38,7 +38,8 @@ class GoogleSpreadSheet:
         data_to_export, total_orgs = [get_headers()], len(orgs)
         for org in orgs.values():
             fyle_tpa_data = FyleConnector(org['refresh_token'])
-            data_to_export += format_expenses(fyle_tpa_data.get_expenses())
+            expenses = fyle_tpa_data.get_expenses()
+            data_to_export += format_expenses(expenses)
 
         value_range_body = {
             'values': data_to_export
