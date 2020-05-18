@@ -8,6 +8,7 @@ from .models import Org, Export
 from apps.users.models import User
 from rest_framework.views import status
 from rest_framework.response import Response
+from .serializers import ExportSerializer
 
 scope = [
             'https://www.googleapis.com/auth/analytics.readonly',
@@ -22,9 +23,9 @@ class GoogleSpreadSheet:
         self.client = gspread.authorize(creds)
         self.service = discovery.build('sheets', 'v4', credentials=creds)
         self.range_ = 'A1:Z'
-        self.SYNC_SUCCESSFUL = "Sync Completed"
-        self.SYNC_FAILED = "Sync Failed"
-        self.DEFAULT_SYNC_STATUS = "Sync is in progress"
+        self.SYNC_SUCCESSFUL = "Completed"
+        self.SYNC_FAILED = "Failed"
+        self.DEFAULT_SYNC_STATUS = "In progress"
 
     def create_sheet(self):
         sheet = self.client.create('Fyle-GDS')
@@ -90,3 +91,12 @@ def write_gsheet(user, enterprise_id):
     return Response(
         status=response_status
     )
+
+
+def share_gsheet(user_id, enterprise_id):
+
+    export = Export.objects.filter(enterprise_id=enterprise_id).first()
+    export_data = ExportSerializer(export).data
+    if export:
+        user_email = User.objects.get(user_id=user_id).email
+        GoogleSpreadSheet().share_sheet(export_data['gsheet_link'], user_email)

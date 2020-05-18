@@ -11,7 +11,7 @@ from fylesdk import exceptions as fyle_exc
 from .models import Enterprise, Org, Export
 from apps.users.models import User
 from .serializers import ExportSerializer, EnterpriseSerializer, OrgsSerializer
-from .utils import write_gsheet
+from .utils import write_gsheet, share_gsheet
 from fyle_finance_dashboard_api.utils import assert_valid
 
 User = get_user_model()
@@ -115,6 +115,7 @@ class UserAccountMapping(generics.RetrieveAPIView):
                     },
                     status=status.HTTP_401_UNAUTHORIZED
                 )
+        share_gsheet(request.user, data['id'])
         return Response(
             status=response_status,
             data=data
