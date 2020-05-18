@@ -49,7 +49,6 @@ class GoogleSpreadSheet:
             spreadsheetId=sheet_id,
             range=self.range_,
             valueInputOption='RAW',
-            insertDataOption='INSERT_ROWS',
             body=value_range_body)
         response = request.execute()
         rows = len(data_to_export)-1
