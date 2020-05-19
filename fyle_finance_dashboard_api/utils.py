@@ -2,12 +2,12 @@ from rest_framework.views import Response
 from rest_framework.serializers import ValidationError
 import requests
 import json
-
+from datetime import date, timedelta, datetime
 MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "June",
           "July", "Aug", "Sept", "Oct", "Nov", "Dec"
           ]
 all_exchange_rates = {}
-
+count = 0
 
 def assert_valid(condition: bool, message: str) -> Response or None:
     """
@@ -25,17 +25,34 @@ def assert_valid(condition: bool, message: str) -> Response or None:
 def get_exchange_rate(start_date, end_date, currency):
     global all_exchange_rates
     currency_exchange_rates = requests.get(
-        'https://api.exchangeratesapi.io/history?start_at={}&end_at={}&symbols=USD,{}'.format(start_date, end_date,
+        'https://api.exchangeratesapi.io/history?start_at={}&end_at={}&base=USD&symbols=USD,{}'.format(start_date, end_date,
                                                                                               currency))
     all_exchange_rates[currency] = json.loads(currency_exchange_rates.text)["rates"]
 
 
-def get_single_date_exchange_rate(date, currency):
+def get_single_date_exchange_rate(exchange_date, currency):
     global all_exchange_rates
-    currency_exchange_rates = requests.get('https://api.exchangeratesapi.io/{}?base=USD'.format(date))
+    exchange_date_to_int = [*map(int, exchange_date.split("-"))]
+    datetime_object = date(exchange_date_to_int[0], exchange_date_to_int[1], exchange_date_to_int[2])
+    one_day_before_exchange_date = str((datetime_object - timedelta(days=1)).strftime('%Y-%m-%d'))
+    two_days_before_exchange_date = str((datetime_object - timedelta(days=2)).strftime('%Y-%m-%d'))
+    if one_day_before_exchange_date in all_exchange_rates[currency]:
+        all_exchange_rates[currency][exchange_date] = {
+            currency: all_exchange_rates[currency][one_day_before_exchange_date][currency],
+            'USD': all_exchange_rates[currency][one_day_before_exchange_date]['USD']
+        }
+        return
+
+    if two_days_before_exchange_date in all_exchange_rates[currency]:
+        all_exchange_rates[currency][exchange_date] = {
+            currency: all_exchange_rates[currency][two_days_before_exchange_date][currency],
+            'USD': all_exchange_rates[currency][two_days_before_exchange_date][currency]
+        }
+        return
+    currency_exchange_rates = requests.get('https://api.exchangeratesapi.io/{}?base=USD'.format(exchange_date))
     total_exchange_rates = json.loads(currency_exchange_rates.text)["rates"]
-    all_exchange_rates[currency][date] = {
-        currency: total_exchange_rates[currency],
+    all_exchange_rates[currency][exchange_date] = {
+        currency: total_exchange_rates[currency] if currency in total_exchange_rates else None,
         'USD': total_exchange_rates['USD']
     }
 
@@ -50,16 +67,22 @@ def format_date(value, currency=False):
     return value
 
 
-def calculate_amount(created_at, start_date, end_date, currency, amount):
+def calculate_amount(expense, start_date, end_date):
     global all_exchange_rates
+    created_at = format_date(expense['created_at'], True)
+    spent_at = format_date(expense['spent_at'], True)
+    currency = expense['currency']
+    amount = expense['amount']
+    exchange_rate_date = spent_at
+    if exchange_rate_date is None:
+        exchange_rate_date = created_at
     if currency is not None:
         if currency not in all_exchange_rates:
             get_exchange_rate(start_date, end_date, currency)
-        if created_at not in all_exchange_rates[currency]:
-            get_single_date_exchange_rate(created_at, currency)
-        usd_rate = all_exchange_rates[currency][created_at]['USD']
-        currency_rate = all_exchange_rates[currency][created_at][currency]
-        return (usd_rate * amount) / currency_rate
+        if exchange_rate_date not in all_exchange_rates[currency]:
+            get_single_date_exchange_rate(exchange_rate_date, currency)
+        currency_rate = all_exchange_rates[currency][exchange_rate_date][currency]
+        return round(amount / currency_rate, 2) if currency_rate is not None else None
     return None
 
 
@@ -84,12 +107,11 @@ def get_headers():
     header = [
         'Entity Name',
         'Employee Email',
-        'Report Id',
         'Employee Id',
         'Cost Center',
         'Reimbursable',
         'State',
-        'Claim Number',
+        'Report Number',
         'Currency',
         'Amount',
         'Amount in USD',
@@ -110,22 +132,19 @@ def format_expenses(expenses):
     expenses = sorted(expenses, key=lambda x: format_date(x['created_at'], True))
     start_date = format_date(expenses[0]['created_at'], True)
     end_date = format_date(expenses[-1]['created_at'], True)
-
     for expense in expenses:
         formatted_expense = [
             expense['org_name'],
             expense['employee_email'],
-            expense['report_id'],
-            expense['employee_id'],
+            expense['employee_code'],
             expense['cost_center_name'],
             "YES" if expense['reimbursable'] else "NO",
             STATES[expense['state']],
             expense['claim_number'],
             expense['currency'],
             expense['amount'],
-            expense['amount'] if expense['currency'] == 'USD' else calculate_amount(format_date(expense['created_at'], True),
-                                                                         start_date, end_date, expense['currency'],
-                                                                         expense['amount']),
+            expense['amount'] if expense['currency'] == 'USD' else calculate_amount(expense,
+                                                                         start_date, end_date),
             expense['purpose'],
             expense['expense_number'],
             FUND_SOURCES[expense['fund_source']],
