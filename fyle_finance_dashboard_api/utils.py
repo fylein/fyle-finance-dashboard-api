@@ -7,7 +7,6 @@ MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "June",
           "July", "Aug", "Sept", "Oct", "Nov", "Dec"
           ]
 all_exchange_rates = {}
-count = 0
 
 
 def assert_valid(condition: bool, message: str) -> Response or None:
