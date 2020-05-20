@@ -9,6 +9,7 @@ MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "June",
 all_exchange_rates = {}
 count = 0
 
+
 def assert_valid(condition: bool, message: str) -> Response or None:
     """
     Assert conditions
@@ -120,6 +121,7 @@ def get_headers():
         'Fund Source',
         'Category Name',
         'Sub Category',
+        'Project Name',
         'Spent On',
         'Created On',
         'Approved On'
@@ -150,6 +152,7 @@ def format_expenses(expenses):
             FUND_SOURCES[expense['fund_source']],
             expense['category_name'],
             expense['sub_category'],
+            expense['project_name'],
             format_date(expense['spent_at']),
             format_date(expense['created_at']),
             format_date(expense['approved_at'])
