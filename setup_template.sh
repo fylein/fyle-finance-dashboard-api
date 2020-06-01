@@ -1,4 +1,5 @@
 #!/bin/bash
+
 # Django Settings
 export SECRET_KEY=YOUR DJANGO SECRET KEY
 export ALLOWED_HOSTS=HOSTS SEPARATED BY COMMAS
