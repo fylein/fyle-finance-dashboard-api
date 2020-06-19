@@ -13,15 +13,10 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.urls import path, include
+from django.urls import path
 
-from .views import EnterpriseView, UserAccountMapping, ExportView, OrgView, ExportScheduleView
+from .views import ConnectFyleView
 
 urlpatterns = [
-    path('', EnterpriseView.as_view()),
-    path('<int:enterprise_id>/orgs/', OrgView.as_view()),
-    path('<int:enterprise_id>/exports/', ExportView.as_view()),
-    path('<int:enterprise_id>/exports/trigger/', ExportScheduleView.as_view()),
-    path('add_user/', UserAccountMapping.as_view()),
-    path('<int:enterprise_id>/fyle/', include('apps.fyle.urls'))
+    path('connect_fyle/authorization_code/', ConnectFyleView.as_view())
 ]

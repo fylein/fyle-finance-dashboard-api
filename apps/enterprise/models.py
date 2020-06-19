@@ -41,6 +41,7 @@ class Export(models.Model):
     status = models.TextField(blank=True, null=True, verbose_name='Status')
     total_rows = models.IntegerField(verbose_name='No. of rows', default=0)
     total_orgs = models.IntegerField(verbose_name='No. of orgs', default=0)
-    gsheet_link = models.TextField(blank=True, null=True, verbose_name='Gsheet link')
+    job_id = models.CharField(max_length=255, help_text='Fyle job id')
+    google_sheets_link = models.TextField(blank=True, null=True, verbose_name='Google sheets link')
     created_at = models.DateTimeField(auto_now_add=True, help_text='created at time')
     updated_at = models.DateTimeField(auto_now=True, help_text='updated at time')

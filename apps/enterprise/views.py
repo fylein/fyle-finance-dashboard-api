@@ -1,18 +1,17 @@
 from django.contrib.auth import get_user_model
+
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.views import status
-from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from .permissions import EnterprisePermissions
+
 from fyle_rest_auth.utils import AuthUtils
-from fylesdk import exceptions as fyle_exc
+
+from fyle_finance_dashboard_api.utils import assert_valid
 
 from .models import Enterprise, Org, Export
-from apps.users.models import User
 from .serializers import ExportSerializer, EnterpriseSerializer, OrgsSerializer
-from .utils import write_gsheet, share_gsheet
-from fyle_finance_dashboard_api.utils import assert_valid
+from .utils import write_google_sheet, share_google_sheet, schedule_export
 
 User = get_user_model()
 auth_utils = AuthUtils()
@@ -23,6 +22,7 @@ class EnterpriseView(generics.ListCreateAPIView):
     Fyle Finance Export
     """
     permission_classes = []
+    authentication_classes = []
 
     def post(self, request, **kwargs):
 
@@ -37,7 +37,7 @@ class EnterpriseView(generics.ListCreateAPIView):
                 status=status.HTTP_200_OK
             )
         return Response(
-            data= {
+            data={
                 'messages': "Unable to create Enterprise",
             },
             status=status.HTTP_400_BAD_REQUEST
@@ -47,14 +47,24 @@ class EnterpriseView(generics.ListCreateAPIView):
 class OrgView(generics.ListCreateAPIView):
 
     serializer_class = OrgsSerializer
+    authentication_classes = []
+    permission_classes = []
 
     def post(self, request, **kwargs):
+        org_name = request.data['org_name'] or None
+        org_id = request.data['org_id'] or None
+        enterprise_id = request.data['enterprise_id'] or None
 
-        fields = ['org_name', 'org_id', 'enterprise_id']
-        assert_valid(field in fields, "{0} Field is missing".format(field))
-        org = Org(org_name=request.data['org_name'], org_id=request.data['org_id'],
-                  enterprise_id=request.data['enterprise_id'])
-        org.save()
+        assert_valid(org_name is not None, 'Org name not found in payload')
+        assert_valid(org_id is not None, 'Org id not found in payload')
+        assert_valid(enterprise_id is not None, 'Enterprise id not found in payload')
+
+        org, _ = Org.objects.update_or_create(
+            org_name=org_name,
+            org_id=org_id,
+            enterprise_id=enterprise_id
+        )
+
         return Response(
             data=OrgsSerializer(org).data,
             status=status.HTTP_200_OK
@@ -64,12 +74,28 @@ class OrgView(generics.ListCreateAPIView):
         return Org.objects.filter(enterprise_id=self.kwargs['enterprise_id'])
 
 
+class ExportScheduleView(generics.CreateAPIView):
+
+    def post(self, request,  **kwargs):
+        enterprise_id = kwargs['enterprise_id']
+
+        return Response(
+            data=schedule_export(enterprise_id, request.user),
+            status=status.HTTP_200_OK
+        )
+
+
 class ExportView(generics.ListCreateAPIView):
 
     def post(self, request,  **kwargs):
 
         enterprise_id = kwargs['enterprise_id']
-        return write_gsheet(request.user, enterprise_id)
+        write_google_sheet(request.user, enterprise_id)
+
+        return Response(
+            data={},
+            status=status.HTTP_200_OK
+        )
 
     def get(self, request, **kwargs):
         """
@@ -90,7 +116,7 @@ class ExportView(generics.ListCreateAPIView):
             )
 
 
-class UserAccountMapping(generics.RetrieveAPIView):
+class UserAccountMapping(generics.CreateAPIView):
 
     permission_classes = [IsAuthenticated]
 
@@ -115,73 +141,8 @@ class UserAccountMapping(generics.RetrieveAPIView):
                     },
                     status=status.HTTP_401_UNAUTHORIZED
                 )
-        share_gsheet(request.user, data['id'])
+        share_google_sheet(request.user, data['id'])
         return Response(
             status=response_status,
             data=data
         )
-
-
-class ConnectFyleView(viewsets.ViewSet):
-    """
-    Fyle Connect Oauth View
-    """
-    def post(self, request, **kwargs):
-        """
-        Post of Adding Fyle org refresh token
-        """
-        try:
-            authorization_code = request.data.get('code')
-
-            refresh_token = auth_utils.generate_fyle_refresh_token(authorization_code)['refresh_token']
-            fyle_user = auth_utils.get_fyle_user(refresh_token)
-            org_id = fyle_user['org_id']
-            user_email = fyle_user['employee_email']
-            Org.objects.get(org_id=org_id, enterprise_id=kwargs['enterprise_id'])
-            org_credential, _ = Org.objects.update_or_create(
-                org_id=org_id,
-                defaults={
-                    'refresh_token': refresh_token,
-                    'added_by': user_email
-                }
-            )
-
-            return Response(
-                data=OrgsSerializer(org_credential).data,
-                status=status.HTTP_200_OK
-            )
-        except Org.DoesNotExist:
-            return Response(
-                {
-                    'message': "This org doesn't exist in this enterprise"
-                },
-                status=status.HTTP_404_NOT_FOUND
-            )
-        except fyle_exc.UnauthorizedClientError:
-            return Response(
-                {
-                    'message': 'Invalid Authorization Code'
-                },
-                status=status.HTTP_403_FORBIDDEN
-            )
-        except fyle_exc.NotFoundClientError:
-            return Response(
-                {
-                    'message': 'Fyle Application not found'
-                },
-                status=status.HTTP_404_NOT_FOUND
-            )
-        except fyle_exc.WrongParamsError:
-            return Response(
-                {
-                    'message': 'Some of the parameters are wrong'
-                },
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        except fyle_exc.InternalServerError:
-            return Response(
-                {
-                    'message': 'Wrong/Expired Authorization code'
-                },
-                status=status.HTTP_401_UNAUTHORIZED
-            )

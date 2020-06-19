@@ -2,10 +2,13 @@ from rest_framework.views import Response
 from rest_framework.serializers import ValidationError
 import requests
 import json
-from datetime import date, timedelta, datetime
-MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "June",
-          "July", "Aug", "Sept", "Oct", "Nov", "Dec"
-          ]
+from datetime import date, timedelta
+
+MONTHS = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'June',
+    'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'
+]
+
 all_exchange_rates = {}
 
 
@@ -22,11 +25,11 @@ def assert_valid(condition: bool, message: str) -> Response or None:
         })
 
 
-def get_exchange_rate(start_date, end_date, currency):
+def get_exchange_rates(start_date, end_date, currency):
     global all_exchange_rates
     currency_exchange_rates = requests.get(
-        'https://api.exchangeratesapi.io/history?start_at={}&end_at={}&base=USD&symbols=USD,{}'.format(start_date, end_date,
-                                                                                              currency))
+        'https://api.exchangeratesapi.io/history?start_at={}&end_at={}&base=USD&symbols=USD,{}'.format(
+            start_date, end_date, currency))
     all_exchange_rates[currency] = json.loads(currency_exchange_rates.text)["rates"]
 
 
@@ -59,11 +62,11 @@ def get_single_date_exchange_rate(exchange_date, currency):
 
 def format_date(value, currency=False):
     if value:
-        date, month, year = value.split("T")[0].split("-")[::-1]
+        date_string, month, year = value.split("T")[0].split("-")[::-1]
         if not currency:
-            return "{} {}, {}".format(MONTHS[int(month) - 1], date, year)
+            return "{} {}, {}".format(MONTHS[int(month) - 1], date_string, year)
         else:
-            return "{}-{}-{}".format(year, month, date)
+            return "{}-{}-{}".format(year, month, date_string)
     return value
 
 
@@ -78,7 +81,7 @@ def calculate_amount(expense, start_date, end_date):
         exchange_rate_date = created_at
     if currency is not None:
         if currency not in all_exchange_rates:
-            get_exchange_rate(start_date, end_date, currency)
+            get_exchange_rates(start_date, end_date, currency)
         if exchange_rate_date not in all_exchange_rates[currency]:
             get_single_date_exchange_rate(exchange_rate_date, currency)
         currency_rate = all_exchange_rates[currency][exchange_rate_date][currency]
