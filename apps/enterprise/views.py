@@ -21,8 +21,6 @@ class EnterpriseView(generics.ListCreateAPIView):
     """
     Fyle Finance Export
     """
-    permission_classes = []
-    authentication_classes = []
 
     def post(self, request, **kwargs):
 
@@ -47,8 +45,6 @@ class EnterpriseView(generics.ListCreateAPIView):
 class OrgView(generics.ListCreateAPIView):
 
     serializer_class = OrgsSerializer
-    authentication_classes = []
-    permission_classes = []
 
     def post(self, request, **kwargs):
         org_name = request.data['org_name'] or None
