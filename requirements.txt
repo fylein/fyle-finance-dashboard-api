@@ -26,3 +26,4 @@ wcwidth==0.1.8
 gspread
 oauth2client==4.1.3
 google-api-python-client
+whitenoise==5.1.0
