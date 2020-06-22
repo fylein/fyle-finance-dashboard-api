@@ -17,6 +17,9 @@ class Enterprise(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, help_text='created at time')
     updated_at = models.DateTimeField(auto_now=True, help_text='updated at time')
 
+    def __str__(self):
+        return self.name
+
 
 class Org(models.Model):
     """
@@ -30,6 +33,9 @@ class Org(models.Model):
     added_by = models.TextField(blank=True, null=True, verbose_name='Added by')
     created_at = models.DateTimeField(auto_now_add=True, help_text='created at time')
     updated_at = models.DateTimeField(auto_now=True, help_text='updated at time')
+
+    def __str__(self):
+        return self.org_name
 
 
 class Export(models.Model):
