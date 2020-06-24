@@ -6,8 +6,6 @@ from fyle_rest_auth.models import AuthToken
 from googleapiclient import discovery
 from oauth2client.service_account import ServiceAccountCredentials
 
-from rest_framework.views import status
-
 from apps.fyle.utils import FyleConnector
 from apps.users.models import User
 

@@ -90,17 +90,17 @@ def calculate_amount(expense, start_date, end_date):
 
 
 FUND_SOURCES = {
-    "PERSONAL": "Personal Account",
-    "ADVANCE": "Advance",
-    "CCC": "Corporate Credit Card"
+    "PERSONAL": "Expense Created From Employee Account",
+    "ADVANCE": "Expense Created Against Advance",
+    "CCC": "Expense Created From Corporate Credit Card"
 }
 
 STATES = {
     "PAYMENT_PROCESSING": "Payment Processing",
-    "COMPLETE": "Complete",
+    "COMPLETE": "Fyled",
     "PAYMENT_PENDING": "Payment Pending",
     "APPROVED": "Approved",
-    "APPROVER_PENDING": "Approver pending",
+    "APPROVER_PENDING": "Approval pending",
     "DRAFT": "Draft",
     "PAID": "Paid"
 }
@@ -109,7 +109,6 @@ STATES = {
 def get_headers():
     header = [
         'Entity Name',
-        'Employee Email',
         'Employee Id',
         'Cost Center',
         'Reimbursable',
@@ -139,22 +138,20 @@ def format_expenses(expenses):
     for expense in expenses:
         formatted_expense = [
             expense['org_name'],
-            expense['employee_email'],
             expense['employee_code'],
-            expense['cost_center_name'],
+            expense['cost_center_name'] if expense['cost_center_name'] else 'Unspecified',
             "YES" if expense['reimbursable'] else "NO",
             STATES[expense['state']],
             expense['claim_number'],
             expense['currency'],
             expense['amount'],
-            expense['amount'] if expense['currency'] == 'USD' else calculate_amount(expense,
-                                                                         start_date, end_date),
+            expense['amount'] if expense['currency'] == 'USD' else calculate_amount(expense, start_date, end_date),
             expense['purpose'],
             expense['expense_number'],
             FUND_SOURCES[expense['fund_source']],
             expense['category_name'],
             expense['sub_category'],
-            expense['project_name'],
+            expense['project_name'] if expense['project_name'] else 'Unspecified',
             format_date(expense['spent_at']),
             format_date(expense['created_at']),
             format_date(expense['approved_at'])
